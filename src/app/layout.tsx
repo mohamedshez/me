@@ -11,9 +11,9 @@ const mono = localFont({ src: "../../node_modules/@fontsource/ibm-plex-mono/file
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.SITE_URL || "https://www.shez.app"),
-  title: { default: "Mohamed Shez — Senior Full-Stack Engineer", template: "%s | Mohamed Shez" },
+  title: { default: "Mohamed Shez - Senior Full-Stack Engineer", template: "%s | Mohamed Shez" },
   description: "The personal portfolio of Mohamed Shez. Explore applications, public repositories, and the engineering behind KASH.lv, OSINT, WorldviewOS, and more.",
-  openGraph: { type: "website", locale: "en_GB", siteName: "Mohamed Shez", title: "Mohamed Shez — Senior Full-Stack Engineer", description: "Applications, public projects, and the engineering behind them." },
+  openGraph: { type: "website", locale: "en_GB", siteName: "Mohamed Shez", title: "Mohamed Shez - Senior Full-Stack Engineer", description: "Applications, public projects, and the engineering behind them." },
   robots: process.env.VERCEL_ENV === "preview" ? { index: false, follow: false } : undefined,
 };
 

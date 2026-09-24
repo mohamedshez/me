@@ -6,7 +6,7 @@ export const person = {
   role: "Senior Full-Stack Engineer",
   introduction: "I build applications, data tools, and the systems behind them. My work spans React, Next.js, and TypeScript, with hands-on responsibility from development through maintenance.",
   about: "I’m Mohamed Shez, a Senior Full-Stack Engineer. I care about how software works, how it feels to use, and how it holds up after launch. This is a collection of my own projects, experiments, and ongoing work.",
-  personal: "Away from application development, I administer PC game servers. I’m also a dad of two—there’s usually something to build, fix, or figure out.",
+  personal: "Away from application development, I administer PC game servers. I’m also a dad of two - there’s usually something to build, fix, or figure out.",
   github: "https://github.com/mohamedshez",
   youtube: "https://www.youtube.com/@ShazeAn",
   linkedin: "https://www.linkedin.com/in/mohamedshez/",
