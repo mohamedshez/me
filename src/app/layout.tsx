@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { Analytics } from "@vercel/analytics/next";
 import { BuildVersion } from "@/components/build-version";
 import { Shell } from "@/components/shell";
 import { DailyRefresh } from "@/components/daily-refresh";
@@ -17,5 +18,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return <html lang="en" suppressHydrationWarning className={`${sans.variable} ${mono.variable}`}><head><script dangerouslySetInnerHTML={{ __html: "try{var t=localStorage.getItem('shez-theme');if(t==='dark'||t==='light')document.documentElement.dataset.theme=t}catch(e){}" }} /></head><body><DailyRefresh /><Shell buildVersion={<BuildVersion />}>{children}</Shell></body></html>;
+  return <html lang="en" suppressHydrationWarning className={`${sans.variable} ${mono.variable}`}><head><script dangerouslySetInnerHTML={{ __html: "try{var t=localStorage.getItem('shez-theme');if(t==='dark'||t==='light')document.documentElement.dataset.theme=t}catch(e){}" }} /></head><body><DailyRefresh /><Shell buildVersion={<BuildVersion />}>{children}</Shell><Analytics /></body></html>;
 }
