@@ -23,7 +23,11 @@ export function createBuildInfo(packageVersion, env = process.env, now = new Dat
   const release = ci && env.GITHUB_REPOSITORY === "mohamedshez/me" &&
     env.GITHUB_REF === "refs/heads/main" && env.GITHUB_EVENT_NAME === "workflow_dispatch" && env.PORTFOLIO_RELEASE === "true";
   const suffix = ci ? `${release ? "build" : "check"}.${run}.${attempt}` : `local.${now.toISOString().replace(/\D/g, "")}`;
-  const version = `v${packageVersion}-${suffix}`;
+  const releaseVersion = env.PORTFOLIO_RELEASE_VERSION;
+  if (release && !/^v\d+\.\d+\.\d+$/.test(releaseVersion ?? "")) {
+    throw new Error("Production release requires an allocated semantic version");
+  }
+  const version = release && typeof releaseVersion === "string" ? releaseVersion : `v${packageVersion}-${suffix}`;
   return {
     version, commit, builtAt: now.toISOString(),
     // The release workflow creates this tag after tests and before deployment.

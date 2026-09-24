@@ -6,16 +6,16 @@ const commit = "a".repeat(40);
 const date = new Date("2026-09-24T12:00:00Z");
 const production = {
   GITHUB_ACTIONS: "true", GITHUB_SHA: commit, GITHUB_RUN_NUMBER: "12", GITHUB_RUN_ATTEMPT: "1",
-  GITHUB_REPOSITORY: "mohamedshez/me", GITHUB_REF: "refs/heads/main", GITHUB_EVENT_NAME: "workflow_dispatch", PORTFOLIO_RELEASE: "true",
+  GITHUB_REPOSITORY: "mohamedshez/me", GITHUB_REF: "refs/heads/main", GITHUB_EVENT_NAME: "workflow_dispatch", PORTFOLIO_RELEASE: "true", PORTFOLIO_RELEASE_VERSION: "v1.0.1",
 };
 
-test("production builds share one immutable tag/version and retries get a new version", () => {
+test("production uses the allocated semantic version for footer, API and tag", () => {
   const build = createBuildInfo("1.0.0", production, date);
-  assert.equal(build.version, "v1.0.0-build.12.1");
+  assert.equal(build.version, "v1.0.1");
   assert.equal(build.tag, build.version);
   assert.equal(build.commit, commit);
   assert.equal(build.tagUrl, `https://github.com/mohamedshez/me/tree/${build.version}`);
-  assert.notEqual(createBuildInfo("1.0.0", { ...production, GITHUB_RUN_ATTEMPT: "2" }, date).version, build.version);
+  assert.notEqual(createBuildInfo("1.0.0", { ...production, GITHUB_RUN_ATTEMPT: "2", PORTFOLIO_RELEASE_VERSION: "v1.0.2" }, date).version, build.version);
 });
 
 test("PR checks and local builds never claim an existing GitHub release tag", () => {
@@ -48,5 +48,12 @@ test("main pushes and check-only dispatches do not claim production tags", () =>
     assert.equal(build.tag, null);
     assert.equal(build.tagUrl, null);
     assert.equal(build.version, "v1.0.0-check.12.1");
+  }
+});
+
+
+test("production refuses unallocated or malformed release versions", () => {
+  for (const version of [undefined, "v1.0.0-build.1.1", "latest", "1.0.1"]) {
+    assert.throws(() => createBuildInfo("1.0.1", { ...production, PORTFOLIO_RELEASE_VERSION: version }, date));
   }
 });
