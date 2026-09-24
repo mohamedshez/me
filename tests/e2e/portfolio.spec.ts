@@ -82,3 +82,12 @@ test("recruiters can see the portrait, broader skills, live portfolio and downlo
   await page.goto("/work/shez-portfolio");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("shez.app");
 });
+
+test("copyright follows the calendar across New Year without a deployment", async ({ page }) => {
+  await page.clock.install({ time: new Date(2030, 11, 31, 23, 59, 50) });
+  await page.goto("/");
+  const copyright = page.locator("footer").getByText(/© .*shez.app/);
+  await expect(copyright).toHaveText("© 2030 shez.app. Crafted by Mohamed Shez, powered by AI.");
+  await page.clock.fastForward(20_000);
+  await expect(copyright).toHaveText("© 2031 shez.app. Crafted by Mohamed Shez, powered by AI.");
+});

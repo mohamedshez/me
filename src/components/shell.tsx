@@ -3,6 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Github, Menu, X, Moon, Sun, ArrowUpRight } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Copyright } from "@/components/copyright";
 import { person } from "@/content/portfolio";
 
 export function Shell({ children, buildVersion }: { children: React.ReactNode; buildVersion: React.ReactNode }) {
@@ -37,6 +38,6 @@ export function Shell({ children, buildVersion }: { children: React.ReactNode; b
     </div></header>
     <div className="location-bar"><div className="site-container location-inner"><nav aria-label="Breadcrumb"><ol><li><Link href="/">shez.app</Link></li>{segments.length === 0 ? <li aria-current="page">overview</li> : segments.map((segment, i) => <li key={segment}>{i < segments.length - 1 ? <Link href={segment === "work" ? "/projects" : "/" + segments.slice(0, i + 1).join("/")}>{segment}</Link> : <span aria-current="page">{segment.replaceAll("-", " ")}</span>}</li>)}</ol></nav><span className="edition">PERSONAL PORTFOLIO / ENGINEERING EDITION</span></div></div>
     <main id="main-content">{children}</main>
-    <footer className="site-footer"><div className="site-container footer-inner"><div><Link className="footer-brand" href="/">shez.app</Link><p>Mohamed Shez · Senior Full-Stack Engineer</p>{buildVersion}</div><nav aria-label="Footer navigation"><Link href="/sitemap">Sitemap</Link><a href={person.github} target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href={person.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><a href={person.youtube} target="_blank" rel="noopener noreferrer">YouTube ↗</a></nav></div></footer>
+    <footer className="site-footer"><div className="site-container footer-inner"><div><Link className="footer-brand" href="/">shez.app</Link><p>Mohamed Shez · Senior Full-Stack Engineer</p><Copyright />{buildVersion}</div><nav aria-label="Footer navigation"><Link href="/sitemap">Sitemap</Link><a href={person.github} target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href={person.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><a href={person.youtube} target="_blank" rel="noopener noreferrer">YouTube ↗</a></nav></div></footer>
   </>;
 }
