@@ -4,16 +4,21 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      release:
+        description: Release the accumulated changes to www.shez.app
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 concurrency:
-  group: portfolio-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  group: portfolio-${{ github.event_name == 'workflow_dispatch' && inputs.release && 'production' || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && !(github.event_name == 'workflow_dispatch' && inputs.release) }}
 
 jobs:
   checks:
-    if: github.event_name == 'pull_request' || github.ref != 'refs/heads/main'
+    if: github.event_name != 'workflow_dispatch' || !inputs.release || github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -31,12 +36,13 @@ jobs:
       - run: npm run test:e2e
 
   production:
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.release
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
       contents: write
     env:
+      PORTFOLIO_RELEASE: 'true'
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
@@ -75,6 +81,10 @@ jobs:
             throw new Error('Deployment must target the dedicated shez-portfolio project.');
           }
           JS
+      - name: Check rolling 24-hour deployment budget
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: node scripts/deployment-budget.mjs
       - name: Pull portfolio project settings
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -86,6 +96,10 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Test the production build
         run: npm run test:e2e
+      - name: Recheck rolling 24-hour deployment budget
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: node scripts/deployment-budget.mjs
       - name: Tag the tested build
         uses: actions/github-script@v7
         with:

@@ -6,7 +6,7 @@ const commit = "a".repeat(40);
 const date = new Date("2026-09-24T12:00:00Z");
 const production = {
   GITHUB_ACTIONS: "true", GITHUB_SHA: commit, GITHUB_RUN_NUMBER: "12", GITHUB_RUN_ATTEMPT: "1",
-  GITHUB_REPOSITORY: "mohamedshez/me", GITHUB_REF: "refs/heads/main", GITHUB_EVENT_NAME: "push",
+  GITHUB_REPOSITORY: "mohamedshez/me", GITHUB_REF: "refs/heads/main", GITHUB_EVENT_NAME: "workflow_dispatch", PORTFOLIO_RELEASE: "true",
 };
 
 test("production builds share one immutable tag/version and retries get a new version", () => {
@@ -36,4 +36,17 @@ test("build identity rejects malformed versions/CI metadata and never serializes
   assert.throws(() => createBuildInfo("1.0.0", { ...production, GITHUB_SHA: "bad" }, date));
   const build = createBuildInfo("1.0.0", { ...production, VERCEL_TOKEN: "secret-value", GITHUB_TOKEN: "secret-value" }, date);
   assert.ok(!JSON.stringify(build).includes("secret-value"));
+});
+
+test("main pushes and check-only dispatches do not claim production tags", () => {
+  for (const env of [
+    { ...production, GITHUB_EVENT_NAME: "push" },
+    { ...production, PORTFOLIO_RELEASE: "false" },
+    { ...production, GITHUB_REF: "refs/heads/feature" },
+  ]) {
+    const build = createBuildInfo("1.0.0", env, date);
+    assert.equal(build.tag, null);
+    assert.equal(build.tagUrl, null);
+    assert.equal(build.version, "v1.0.0-check.12.1");
+  }
 });

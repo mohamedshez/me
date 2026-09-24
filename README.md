@@ -33,7 +33,7 @@ npm run test:e2e
 
 The site describes Mohamed and his own work only. It does not ingest GitHub company, biography, organisation membership, LinkedIn content, employment history, or repository README text. Only owner-matched, explicitly public repository metadata is accepted. A server-side exclusion policy blocks restricted affiliations from names, descriptions, topics, languages, and destination links before rendering or API serialization. Private repositories are never queried or listed automatically.
 
-Keep biographical copy, social links, and approved application descriptions in `src/content/portfolio.ts`. Changes merged to `main` are tested and deployed by GitHub Actions. No employer biography or affiliations should be added to the portfolio, SEO metadata, or project descriptions.
+Keep biographical copy, social links, and approved application descriptions in `src/content/portfolio.ts`. Changes merged to `main` are tested by GitHub Actions and accumulate until an explicit production release. No employer biography or affiliations should be added to the portfolio, SEO metadata, or project descriptions.
 
 ## Live applications
 
@@ -54,7 +54,7 @@ KASH also links to `dev.kash.lv`, `admin.kash.lv`, and `admin.dev.kash.lv`. Thes
    - `VERCEL_ORG_ID`: the Vercel team ID from the new project's settings.
    - `VERCEL_PROJECT_ID`: the **new portfolio project's** ID, never the KASH project ID.
    Keep tokens in the secrets UI; do not paste them into chat or commit them.
-3. Merge the portfolio PR into `main`. The production job validates configuration, runs checks, builds once with Vercel, runs browser smoke tests, creates the GitHub build tag, and deploys that exact artifact using `--prebuilt --prod`. Before the secrets are configured, the job stops with a precise setup error.
+3. Merge the portfolio PR into `main`; this runs checks only. When a larger feature set is ready, open **Actions → Portfolio CI and deployment → Run workflow**, select **main**, enable **Release the accumulated changes to www.shez.app**, and run it once. The production job validates configuration, runs checks, builds once with Vercel, runs browser smoke tests, creates the GitHub build tag, and deploys that exact artifact using `--prebuilt --prod`. Before the secrets are configured, the job stops with a precise setup error.
 4. `vercel.json` disables automatic Git deployments so there is one deployment path and production cannot bypass the test gate. Initial import/manual deployments are bootstrap operations; use the workflow for subsequent production releases.
 5. Add `www.shez.app` and `shez.app` to the **new** project's domain settings, then apply Vercel's displayed DNS records. The canonical default is `https://www.shez.app`; redirect the apex to `www`, or change `SITE_URL` in the portfolio project if you prefer the apex as canonical. Leave all existing application subdomains with their current projects.
 6. Optional: set server-only `GITHUB_TOKEN` in the portfolio Vercel project if public GitHub metadata needs a higher rate limit. No database or Python backend is needed.
@@ -66,8 +66,10 @@ KASH also links to `dev.kash.lv`, `admin.kash.lv`, and `admin.dev.kash.lv`. Thes
 - Tags are created **after tests pass and before deployment**, so failed tests never produce a release tag. A deployment failure may leave a valid tested-build tag; the tag alone does not claim the build went live. Rerunning the workflow increments the attempt and produces a new tag; old tags are never overwritten.
 - `package.json` holds the human-controlled major/minor/patch version. Build numbering is automatic; there is no version-bump commit loop or changelog service.
 - Pull requests run type checks, algorithm/content/version tests, a production-mode Next.js build, and desktop/mobile smoke tests. They use a `check` version and cannot create deployment tags or deploy. Local `npm run build` uses a `local` version and performs no GitHub writes.
-- Pushes to `main` and manual workflow runs on `main` run the production path. The Vercel CLI is pinned in the lockfile. The temporary GitHub Actions token gets `contents: write` only in the production job for tag creation.
-- Production jobs are serialized. To roll back, promote a previous known-good deployment in Vercel; its footer retains the matching build tag without rebuilding it.
+- Pushes to `main` run checks only. Manual runs default to checks only. Only an explicit release run on `main` can deploy production; small fixes and features accumulate between releases. The Vercel CLI is pinned in the lockfile. The temporary GitHub Actions token gets `contents: write` only in the production job for tag creation.
+- Production jobs are serialized. Automatic Git preview and production deployments remain disabled. Daily GitHub feed refresh uses the running application cache and creates **no deployments**.
+- A budget guard checks all visible deployments in the Vercel team over the preceding **24 hours**, including failed and preview deployments, before building and immediately before tagging/deploying. It blocks at **99 existing deployments**, allowing at most the 99th through this workflow. API errors, missing credentials, malformed responses, and incomplete pagination stop the release. The token must have team-wide deployment visibility. This is a portfolio safeguard, not an account-wide lock: deployments made concurrently outside this workflow or deleted history cannot be controlled here. Keep routine releases far below this ceiling.
+- To roll back, promote a previous known-good deployment in Vercel; its footer retains the matching build tag without rebuilding it.
 
 Vercel preview environments instruct search engines not to index them. The live portfolio includes page metadata, breadcrumbs, `/sitemap`, `/sitemap.xml`, `robots.txt`, light/dark themes, keyboard navigation, a mobile menu, and a searchable project directory.
 
