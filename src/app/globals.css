@@ -131,7 +131,7 @@
   .featured-copy .actions { @apply gap-[17px]; }
   .featured-copy .text-link { @apply text-[.8rem]; }
   .live-app-grid, .project-grid { @apply grid grid-cols-[repeat(3,minmax(0,1fr))] gap-[20px]; }
-  .live-app-grid { @apply mt-[22px]; }
+  .live-app-grid { @apply mt-[22px] grid-cols-[repeat(2,minmax(0,1fr))]; }
   .live-app, .project-card { @apply border border-line p-[25px] bg-surface flex flex-col min-w-0; }
   .card-topline { @apply flex justify-between items-center gap-[14px] text-blue mb-[24px]; }
   .card-topline .mono { @apply text-muted text-[.7rem]; }
@@ -443,4 +443,13 @@
   @media(pointer: coarse) { button,.primary-nav a,.footer-inner a,.directory-links a,.text-link {
 
       @apply min-h-[44px]; } }
+}
+
+@layer components {
+  .portrait-frame { @apply p-5; }
+  .profile-portrait { @apply block w-full h-auto aspect-square object-cover rounded-full; }
+  .skills-section { @apply mt-16; }
+  .skills-section h2 { @apply mt-3 mb-6; }
+  .skills-section h3 { @apply mb-4; }
+  .learning-list { @apply grid gap-3 mt-6 pl-5 list-disc; }
 }

@@ -43,7 +43,7 @@ test("navigation, search, filters, environment links and theme work", async ({ p
   await expect(page.getByRole("link", { name: "KASH.lv", exact: true })).toBeVisible();
   await search.fill("");
   await page.getByRole("button", { name: "Live apps", exact: true }).click();
-  await expect(page.locator(".directory-row")).toHaveCount(4);
+  await expect(page.locator(".directory-row")).toHaveCount(5);
   await page.getByRole("link", { name: "KASH.lv", exact: true }).click();
   for (const url of ["https://kash.lv", "https://dev.kash.lv", "https://admin.kash.lv", "https://admin.dev.kash.lv"]) await expect(page.locator(`.environment-grid a[href="${url}"]`)).toHaveCount(1);
   await page.getByRole("button", { name: "Toggle colour theme" }).click();
@@ -53,4 +53,32 @@ test("navigation, search, filters, environment links and theme work", async ({ p
   await expect(page.locator('a[href="https://www.youtube.com/@ShazeAn"]').first()).toBeAttached();
   await page.goto("/projects/this-does-not-exist");
   await expect(page.getByRole("heading", { level: 1 })).toContainText(/route leads nowhere|couldn’t load/);
+});
+
+
+test("recruiters can see the portrait, broader skills, live portfolio and download a PDF", async ({ page, request }) => {
+  await page.goto("/");
+  const portrait = page.getByRole("img", { name: "Portrait of Mohamed Shez" });
+  await expect(portrait).toBeVisible();
+  expect(await portrait.evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+  const cvLink = page.getByRole("link", { name: "Download CV (PDF)" }).first();
+  await expect(cvLink).toBeVisible();
+  const downloadEvent = page.waitForEvent("download");
+  await cvLink.click();
+  const download = await downloadEvent;
+  expect(download.suggestedFilename()).toBe("Mohamed-Shez-CV.pdf");
+  const cv = await request.get("/cv/Mohamed-Shez-CV.pdf");
+  expect(cv.status()).toBe(200);
+  expect(cv.headers()["content-type"]).toContain("application/pdf");
+  expect((await cv.body()).subarray(0, 5).toString()).toBe("%PDF-");
+  await page.goto("/about");
+  for (const skill of ["Java", "Python", "C++", "Kotlin", "Spring Boot", "Django", "FastAPI", "Docker", "AWS", "Linux", "CI/CD", "Snowflake"]) {
+    await expect(page.locator(".skills-section").getByText(skill, { exact: true })).toBeVisible();
+  }
+  await page.goto("/projects");
+  await page.getByRole("button", { name: "Live apps", exact: true }).click();
+  await expect(page.locator('.directory-row a[href="/work/shez-portfolio"]').first()).toBeVisible();
+  await expect(page.locator('.directory-row a[href="/projects/me"]')).toHaveCount(0);
+  await page.goto("/work/shez-portfolio");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("shez.app");
 });

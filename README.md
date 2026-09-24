@@ -42,6 +42,7 @@ Keep biographical copy, social links, and approved application descriptions in `
 | KASH.lv | https://kash.lv | Private |
 | OSINT | https://osint.shez.app | https://github.com/mohamedshez/worldosview |
 | WorldviewOS | https://worldviewos.shez.app | https://github.com/mohamedshez/worldview-ui |
+| shez.app | https://www.shez.app | https://github.com/mohamedshez/me |
 | Todo | https://todo.shez.app | https://github.com/mohamedshez/todo-app-nextjs |
 
 KASH also links to `dev.kash.lv`, `admin.kash.lv`, and `admin.dev.kash.lv`. These are destinations only; the portfolio does not proxy, authenticate to, or expose administration data.
@@ -91,3 +92,7 @@ The supplied Big O guide is retained in `docs/big-o-agent-guide.md` and required
 - `tests`: content-policy, algorithm, version, and end-to-end browser checks.
 
 GitHub: https://github.com/mohamedshez · YouTube: https://www.youtube.com/@ShazeAn
+
+## Public profile and CV
+
+The portrait in `public/images/mohamed-shez.jpg` is sourced from the owner's public GitHub avatar. Approved CV skills, education, courses, and interests are curated in `src/content/portfolio.ts` rather than automatically ingesting employment profiles. The homepage, About page, and contact section link to `public/cv/Mohamed-Shez-CV.pdf`, a public skills-and-projects CV prepared from the supplied CVs. The original CVs are not published: the public edition preserves the personal-only content policy. Update the curated content and public PDF together when skills or education change.

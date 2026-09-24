@@ -4,15 +4,25 @@ import type { AppProject } from "@/lib/types";
 export const person = {
   name: "Mohamed Shez",
   role: "Senior Full-Stack Engineer",
-  introduction: "I build applications, data tools, and the systems behind them. My work spans React, Next.js, and TypeScript, with hands-on responsibility from development through maintenance.",
-  about: "I’m Mohamed Shez, a Senior Full-Stack Engineer. I care about how software works, how it feels to use, and how it holds up after launch. This is a collection of my own projects, experiments, and ongoing work.",
-  personal: "Away from application development, I administer PC game servers. I’m also a dad of two - there’s usually something to build, fix, or figure out.",
+  introduction: "I build applications, data tools, and the systems behind them. My work spans frontend interfaces, Java and Python backends, data tools, and cloud delivery, with hands-on responsibility from development through maintenance.",
+  about: "I’m Mohamed Shez, a Senior Full-Stack Engineer. I care about how software works, how it feels to use, and how it holds up after launch. With 13 years of experience and a degree in Computer Gaming and Animation Technology, I bring a mix of analytical thinking and creative curiosity to my own projects, experiments, and ongoing work.",
+  personal: "Away from application development, I enjoy scripting, PC building and gaming, and classic and retro motorcycles. I administer PC game servers and I’m a dad of two - there’s usually something to build, fix, or figure out.",
   github: "https://github.com/mohamedshez",
   youtube: "https://www.youtube.com/@ShazeAn",
   linkedin: "https://www.linkedin.com/in/mohamedshez/",
   email: "mr.mohamed.shez@gmail.com",
-  technologies: ["React", "Next.js", "TypeScript", "Node.js"],
+  technologies: ["TypeScript", "React", "Java", "Spring Boot", "Python", "AWS", "Docker"],
+  cv: "/cv/Mohamed-Shez-CV.pdf",
 };
+
+export const skillGroups = [
+  { name: "Languages & web foundations", items: ["JavaScript", "TypeScript", "Python", "Java", "C++", "Kotlin", "HTML5", "CSS3"] },
+  { name: "Frontend & content", items: ["React", "Next.js", "Angular", "jQuery", "Tailwind CSS", "Sanity CMS"] },
+  { name: "Backend & data", items: ["Node.js", "Spring Boot", "Django", "FastAPI", "REST APIs", "Snowflake", "Streamlit"] },
+  { name: "DevOps & delivery", items: ["Linux", "Docker", "AWS", "Vercel", "Git", "CI/CD"] },
+  { name: "Quality & collaboration", items: ["Selenium", "Jira", "Agile & Scrum", "Figma", "Clean Code"] },
+];
+export const learning = ["Streamlit for Snowflake (2025)", "Java Spring Framework 6 with Spring Boot 3 (2024)", "Python and Django Full Stack (2024)", "Next.js with Sanity CMS (2024)", "Modern React Bootcamp (2024)", "Clean Code (2024)", "Learning React.js (2022)", "Mobile App Development (2015)"];
 
 // Explicitly approved public facts. No private repository API is queried.
 export const applications: AppProject[] = [
@@ -43,6 +53,13 @@ export const applications: AppProject[] = [
     url: "https://todo.shez.app", repository: "todo-app-nextjs",
     technologies: ["React", "Next.js", "Material UI"], responsibility: "My public application",
     notes: ["Create, edit, and delete tasks.", "Local storage preserves tasks across page refreshes.", "Built with React, Next.js, and Material UI."],
+  },
+  {
+    slug: "shez-portfolio", name: "shez.app", category: "Personal portfolio",
+    summary: "My engineering portfolio with live applications, a daily GitHub project feed, and a downloadable public CV.",
+    url: "https://www.shez.app", repository: "me",
+    technologies: ["Next.js", "TypeScript", "Tailwind CSS", "Vercel"], responsibility: "Designed, developed and maintained by me",
+    notes: ["The personal portfolio you are visiting now.", "Public GitHub projects refresh daily without a deployment.", "Versioned releases are tested before deployment through GitHub Actions."],
   },
 ];
 
