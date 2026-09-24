@@ -1,0 +1,18 @@
+"use client";
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import { Search, ArrowUpRight, ArrowRight, GitFork, LockKeyhole } from "lucide-react";
+import { formatDate } from "@/lib/format";
+import { FeedStatus } from "./project-feed";
+import { filterDirectory, directoryPage, type DirectoryEntry, type DirectoryFilter } from "@/lib/directory";
+import type { ProjectFeed } from "@/lib/types";
+
+const FILTERS = [['all', 'All projects'], ['live', 'Live apps'], ['source', 'Public source'], ['forks', 'Forks'], ['archived', 'Archived']] as const;
+export function ProjectDirectory({ entries, status }: { entries: DirectoryEntry[]; status: ProjectFeed["status"] }) {
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<DirectoryFilter>("all");
+  const [page, setPage] = useState(1);
+  const filtered = useMemo(() => filterDirectory(entries, filter, query), [entries, filter, query]);
+  const { pages, currentPage, offset, visible } = directoryPage(filtered, page);
+  return <><div className="directory-controls"><label className="search-field"><Search size={20} /><span className="sr-only">Search projects</span><input type="search" placeholder="Find a project, technology, or idea…" value={query} onChange={e => { setQuery(e.target.value); setPage(1); }} /></label><div className="filters" aria-label="Project filters">{FILTERS.map(([value, label]) => <button key={value} aria-pressed={filter === value} onClick={() => { setFilter(value); setPage(1); }}>{label}</button>)}</div></div><div className="directory-summary"><span aria-live="polite">{filtered.length} {filtered.length === 1 ? "project" : "projects"}</span><FeedStatus status={status} /></div><div className="directory-list">{visible.map((entry, index) => <article key={entry.id} className="directory-row"><span className="directory-number">{String(offset + index + 1).padStart(2, "0")}</span><div className="directory-content"><div className="directory-title"><h2><Link href={entry.href}>{entry.name}</Link></h2>{entry.private && <span className="badge"><LockKeyhole size={12} />Private source</span>}{entry.fork && <span className="badge"><GitFork size={12} />Fork</span>}{entry.archived && <span className="badge">Archived</span>}{entry.live && <span className="badge live-badge">Live app</span>}</div><p>{entry.description}</p><div className="directory-meta">{entry.language && <span>{entry.language}</span>}{entry.pushedAt && <time dateTime={entry.pushedAt}>Last push {formatDate(entry.pushedAt)}</time>}</div></div><div className="directory-links"><Link href={entry.href} aria-label={`Read about ${entry.name}`}>Details <ArrowRight size={15} /></Link>{entry.website && <a href={entry.website} target="_blank" rel="noopener noreferrer">{entry.live ? "Open app" : "Website"} <ArrowUpRight size={15} /></a>}{entry.source && <a href={entry.source} target="_blank" rel="noopener noreferrer">GitHub <ArrowUpRight size={15} /></a>}</div></article>)}</div>{pages > 1 && <nav aria-label="Project pages" className="mt-7 flex flex-wrap items-center justify-between gap-4 font-code text-sm"><button className="button disabled:cursor-not-allowed disabled:opacity-40" disabled={currentPage === 1} onClick={() => setPage(currentPage - 1)}>Previous</button><span role="status">Page {currentPage} of {pages}</span><button className="button disabled:cursor-not-allowed disabled:opacity-40" disabled={currentPage === pages} onClick={() => setPage(currentPage + 1)}>Next</button></nav>}{!filtered.length && <div className="empty-state"><h2>No projects match that search.</h2><p>Try another name or show all projects.</p><button className="button" onClick={() => { setQuery(""); setFilter("all"); setPage(1); }}>Clear filters</button></div>}</>;
+}

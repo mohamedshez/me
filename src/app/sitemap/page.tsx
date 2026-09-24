@@ -1,0 +1,10 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { applications, kashEnvironments, person } from "@/content/portfolio";
+import { getProjectFeed } from "@/lib/github";
+export const dynamic = "force-dynamic";
+export const metadata: Metadata = { title: "Sitemap", alternates: { canonical: "/sitemap" } };
+export default async function SitemapPage() {
+  const feed = await getProjectFeed();
+  return <div className="site-container page-content"><span className="eyebrow">SITEMAP</span><h1>Every route, in one place.</h1><p className="lede">Find the person, explore the work, or open an application directly.</p><div className="sitemap-grid"><section><h2>Portfolio</h2><ul><li><Link href="/">/ Overview</Link></li><li><Link href="/about">/about About me</Link></li><li><Link href="/projects">/projects Complete directory</Link></li>{applications.map(app => <li key={app.slug}><Link href={`/work/${app.slug}`}>{app.name} · Project overview</Link></li>)}</ul></section><section><h2>Live applications</h2><ul>{applications.map(app => <li key={app.slug}><a href={app.url} target="_blank" rel="noopener noreferrer">{new URL(app.url).hostname} ↗</a></li>)}{kashEnvironments.flatMap(environment => environment.links).filter(link => link.url !== "https://kash.lv").map(link => <li key={link.url}><a href={link.url} target="_blank" rel="noopener noreferrer">{new URL(link.url).hostname} ↗</a></li>)}</ul></section><section><h2>Public repositories</h2><ul>{feed.repositories.map(repo => <li key={repo.id}><Link href={`/projects/${repo.name}`}>{repo.name}</Link></li>)}</ul>{feed.status === "unavailable" && <p>Repository updates are temporarily unavailable.</p>}</section><section><h2>Elsewhere</h2><ul><li><a href={person.github} target="_blank" rel="noopener noreferrer">GitHub / mohamedshez ↗</a></li><li><a href={person.youtube} target="_blank" rel="noopener noreferrer">YouTube / @ShazeAn ↗</a></li><li><a href={person.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn ↗</a></li><li><a href={`mailto:${person.email}`}>Email Mohamed ↗</a></li></ul></section></div></div>;
+}

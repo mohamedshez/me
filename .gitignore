@@ -1,0 +1,12 @@
+node_modules/
+.next/
+.vercel/
+.env*
+!.env.example
+*.tsbuildinfo
+playwright-report/
+test-results/
+artifacts/
+
+# Generated per build; never commit a stale deployment version.
+src/generated/build-info.json
