@@ -91,3 +91,30 @@ test("copyright follows the calendar across New Year without a deployment", asyn
   await page.clock.fastForward(20_000);
   await expect(copyright).toHaveText("© 2031 shez.app. Crafted by Mohamed Shez, powered by AI.");
 });
+
+test("readable typography reflows at narrow widths and with enlarged text", async ({ page }) => {
+  test.setTimeout(90000);
+  for (const [width, rootSize] of [[320, 16], [768, 16], [1280, 32], [390, 32]]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const route of ["/", "/about", "/projects", "/work/kash-lv", "/sitemap"]) {
+      await page.goto(route);
+      await page.evaluate(size => { document.documentElement.style.fontSize = `${size}px`; }, rootSize);
+      await page.evaluate(() => document.fonts.ready);
+      const problems = await page.evaluate(() => {
+        const rootSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
+        return [...document.body.querySelectorAll<HTMLElement>("*")].flatMap(element => {
+          if (!element.checkVisibility() || element.closest(".sr-only, .skip-link, svg")) return [];
+          const hasText = [...element.childNodes].some(node => node.nodeType === Node.TEXT_NODE && node.textContent?.trim());
+          if (!hasText) return [];
+          const size = parseFloat(getComputedStyle(element).fontSize);
+          const rect = element.getBoundingClientRect();
+          return size < rootSize * .875 - .1 || rect.right > innerWidth + 1 || rect.left < -1
+            ? [`${element.className}: ${size}px, left ${rect.left}, right ${rect.right}`] : [];
+        });
+      });
+      expect(problems, `${route}, viewport ${width}, root ${rootSize}`).toEqual([]);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${route} overflow at ${width}/${rootSize}`).toBe(true);
+      await expect(page.locator("footer p").first()).toHaveCSS("font-size", `${rootSize}px`);
+    }
+  }
+});
