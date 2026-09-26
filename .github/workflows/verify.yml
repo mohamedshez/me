@@ -13,8 +13,8 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: portfolio-${{ github.event_name == 'workflow_dispatch' && inputs.release && 'production' || github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && !(github.event_name == 'workflow_dispatch' && inputs.release) }}
+  group: ${{ (github.event_name == 'workflow_dispatch' && inputs.release && 'portfolio-production') || format('portfolio-checks-{0}', github.ref) }}
+  cancel-in-progress: ${{ !(github.event_name == 'workflow_dispatch' && inputs.release) }}
 
 jobs:
   checks:
@@ -31,9 +31,12 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
+      - name: Cache Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: ${{ runner.os }}-next-22-${{ hashFiles('package-lock.json') }}
       - run: npm run build
-      - run: npx playwright install --with-deps chromium
-      - run: npm run test:e2e
 
   production:
     if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.release
@@ -101,10 +104,20 @@ jobs:
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: npx --no-install vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+      - name: Cache Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: ${{ runner.os }}-next-22-${{ hashFiles('package-lock.json') }}
       - name: Build versioned production artifact
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: npx --no-install vercel build --prod --token="$VERCEL_TOKEN"
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
       - run: npx playwright install --with-deps chromium
       - name: Test the production build
         run: npm run test:e2e
