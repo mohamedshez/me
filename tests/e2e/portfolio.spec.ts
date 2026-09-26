@@ -51,6 +51,7 @@ test("navigation, search, filters, environment links and theme work", async ({ p
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await expect(page.locator('a[href="https://www.youtube.com/@ShazeAn"]').first()).toBeAttached();
+  await expect(page.locator('a[href="https://stackoverflow.com/users/6725458/shaze"]').first()).toBeAttached();
   await page.goto("/projects/this-does-not-exist");
   await expect(page.getByRole("heading", { level: 1 })).toContainText(/route leads nowhere|couldn’t load/);
 });

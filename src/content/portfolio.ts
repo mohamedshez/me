@@ -9,6 +9,7 @@ export const person = {
   personal: "Away from application development, I enjoy scripting, PC building and gaming, and classic and retro motorcycles. I administer PC game servers and I’m a dad of two - there’s usually something to build, fix, or figure out.",
   github: "https://github.com/mohamedshez",
   youtube: "https://www.youtube.com/@ShazeAn",
+  stackoverflow: "https://stackoverflow.com/users/6725458/shaze",
   linkedin: "https://www.linkedin.com/in/mohamedshez/",
   email: "mr.mohamed.shez@gmail.com",
   technologies: ["TypeScript", "React", "Java", "Spring Boot", "Python", "AWS", "Docker"],

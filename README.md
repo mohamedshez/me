@@ -92,7 +92,7 @@ The supplied Big O guide is retained in `docs/big-o-agent-guide.md` and required
 - `.github/workflows/verify.yml`: PR checks and tagged, tested production deployment.
 - `tests`: content-policy, algorithm, version, and end-to-end browser checks.
 
-GitHub: https://github.com/mohamedshez · YouTube: https://www.youtube.com/@ShazeAn
+GitHub: https://github.com/mohamedshez · YouTube: https://www.youtube.com/@ShazeAn · Stack Overflow: https://stackoverflow.com/users/6725458/shaze
 
 ## Public profile and CV
 
