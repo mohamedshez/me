@@ -1,6 +1,6 @@
 # Portrait enhancement
 
-The website uses `public/images/mohamed-shez-enhanced.png`, generated with the built-in image editing tool from the original GitHub portrait retained at `public/images/mohamed-shez.jpg`. Next.js serves responsive optimized versions.
+The homepage now follows the GitHub avatar automatically (see `src/lib/portrait.ts`). `public/images/mohamed-shez-enhanced.png` remains only as the fallback for when GitHub is unreachable. It was generated with the built-in image editing tool from the original GitHub portrait retained at `public/images/mohamed-shez.jpg`. Next.js serves responsive optimized versions.
 
 ## Final prompt
 
