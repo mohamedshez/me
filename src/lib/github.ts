@@ -3,9 +3,27 @@ import { unstable_cache } from "next/cache";
 import { cache } from "react";
 import { CACHE_SECONDS, GITHUB_OWNER, normalizeRepositories } from "./repositories";
 import { indexRepositories } from "./directory";
+import { AVATAR_URL, FALLBACK_PORTRAIT, portraitFromResponse } from "./portrait";
+import type { Portrait } from "./portrait";
 import type { ProjectFeed } from "./types";
 
 export const PROJECT_CACHE_TAG = "public-projects-v1";
+export const PORTRAIT_CACHE_TAG = "github-portrait-v1";
+
+// HEAD only, at most once per 24 hours. A failed refresh keeps the last cached result.
+const loadPortrait = unstable_cache(async (): Promise<Portrait> => {
+  const response = await fetch(AVATAR_URL, {
+    method: "HEAD", headers: { "User-Agent": "shez-personal-portfolio" }, cache: "no-store", signal: AbortSignal.timeout(3000),
+  });
+  const portrait = portraitFromResponse(response);
+  if (!portrait) throw new Error(`Avatar request failed (${response.status})`);
+  return portrait;
+}, [PORTRAIT_CACHE_TAG, AVATAR_URL], { revalidate: CACHE_SECONDS, tags: [PORTRAIT_CACHE_TAG] });
+
+export const getPortrait = cache(async (): Promise<Portrait> => {
+  try { return await loadPortrait(); }
+  catch { return FALLBACK_PORTRAIT; }
+});
 
 const loadRepositories = unstable_cache(async (): Promise<ProjectFeed> => {
   const headers: Record<string, string> = {
