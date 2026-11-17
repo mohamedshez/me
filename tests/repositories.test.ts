@@ -38,3 +38,18 @@ test("recent highlights exclude forks, archived, stale work and the portfolio it
   assert.deepEqual(recentRepositories(items, new Date("2026-09-24")).map(r => r.name), ["example"]);
 });
 test("daily refresh interval is 24 hours", () => assert.equal(CACHE_SECONDS, 86400));
+
+test("repositories that point back to the portfolio show no separate website", () => {
+  const [moto, portfolio, other] = normalizeRepositories([
+    repo({ id: 1, name: "MotoPack", homepage: "https://www.shez.app" }),
+    repo({ id: 2, name: "me", homepage: "https://www.shez.app", pushed_at: "2026-09-19T00:00:00Z" }),
+    repo({ id: 3, name: "todo", homepage: "https://todo.shez.app", pushed_at: "2026-09-18T00:00:00Z" }),
+  ]);
+  assert.equal(moto.homepage, null);
+  assert.equal(portfolio.homepage, "https://www.shez.app/");
+  assert.equal(other.homepage, "https://todo.shez.app/");
+});
+test("creation dates are kept only when valid", () => {
+  assert.equal(normalizeRepositories([repo({ created_at: "2026-11-16T10:00:00Z" })])[0].createdAt, "2026-11-16T10:00:00.000Z");
+  assert.equal(normalizeRepositories([repo({ created_at: "not a date" })])[0].createdAt, null);
+});

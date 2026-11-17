@@ -149,6 +149,11 @@
   .card-date { @apply block mt-[20px] text-muted; font: .875rem/1.5 var(--font-mono),monospace; }
   .card-badges { @apply flex gap-[7px]; }
   .card-badges span { @apply inline-flex items-center gap-[4px] text-[.875rem] mb-[15px]; }
+  /* Newly created repositories: blueprint offset outline, as on the portrait drawing. */
+  .just-added { @apply mb-[44px]; }
+  .just-added .feed-heading>.eyebrow { @apply m-0; }
+  .project-card-new { @apply border-blue; box-shadow: 8px 8px 0 var(--paper), 9px 9px 0 var(--blue); }
+  .new-badge { @apply border-blue text-blue bg-tint; }
   .about-band { @apply py-[53px] border-y border-line bg-tint; }
   .about-band-grid { @apply grid gap-[75px]; grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
   .about-band h2 { margin: 22px 0 29px; }

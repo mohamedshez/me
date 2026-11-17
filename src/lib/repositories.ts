@@ -2,6 +2,10 @@ import type { Repository } from "./types";
 
 export const GITHUB_OWNER = "mohamedshez";
 export const CACHE_SECONDS = 86400;
+export const NEW_PROJECT_DAYS = 60;
+const DAY_MS = 24 * 60 * 60 * 1000;
+// The portfolio itself; other repositories that point here have no website of their own.
+const PORTFOLIO_HOSTS = new Set(["shez.app", "www.shez.app"]);
 
 // Used exclusively on the server before any external data reaches HTML/JSON.
 // Do not import this policy module into client components.
@@ -25,6 +29,9 @@ export function safePublicUrl(value: unknown): string | null {
 }
 
 type RawRepo = Record<string, unknown>;
+function isoDate(value: unknown): string | null {
+  return typeof value === "string" && Number.isFinite(Date.parse(value)) ? new Date(value).toISOString() : null;
+}
 export function normalizeRepositories(input: unknown): Repository[] {
   if (!Array.isArray(input)) throw new Error("Invalid repository response");
   const unique = new Map<number, Repository>();
@@ -41,12 +48,13 @@ export function normalizeRepositories(input: unknown): Repository[] {
     const language = typeof raw.language === "string" ? raw.language : null;
     const displayed = [raw.name, description, language, topics, raw.homepage];
     if (isExcluded(displayed)) continue;
-    const homepage = raw.fork === true ? null : safePublicUrl(raw.homepage);
-    const pushedAt = typeof raw.pushed_at === "string" && Number.isFinite(Date.parse(raw.pushed_at)) ? new Date(raw.pushed_at).toISOString() : null;
+    const publicHomepage = raw.fork === true ? null : safePublicUrl(raw.homepage);
+    const homepage = publicHomepage && raw.name !== "me" && PORTFOLIO_HOSTS.has(new URL(publicHomepage).hostname) ? null : publicHomepage;
+    const pushedAt = isoDate(raw.pushed_at);
     unique.set(raw.id, {
       id: raw.id, name: raw.name, description: description.replace(/\s+/g, " ").trim().slice(0, 500),
       url: `https://github.com/${GITHUB_OWNER}/${raw.name}`,
-      homepage, language, topics: topics.slice(0, 12), pushedAt,
+      homepage, language, topics: topics.slice(0, 12), pushedAt, createdAt: isoDate(raw.created_at),
       stars: typeof raw.stargazers_count === "number" ? Math.max(0, Math.floor(raw.stargazers_count)) : 0,
       fork: raw.fork === true, archived: raw.archived === true,
     });
@@ -54,18 +62,37 @@ export function normalizeRepositories(input: unknown): Repository[] {
   return [...unique.values()].sort((a, b) => (b.pushedAt ?? "").localeCompare(a.pushedAt ?? "") || a.name.localeCompare(b.name));
 }
 
-export function recentRepositories(repositories: Repository[], now = new Date()): Repository[] {
-  const cutoff = now.getTime() - 180 * 24 * 60 * 60 * 1000;
-  // Fixed-size top-three selection: O(n) time, O(1) extra space, no full sort.
-  // Accepts unsorted input; retained values are references to normalized records.
-  const recent: Repository[] = [];
+function highlightable(repo: Repository): boolean {
+  return !repo.fork && !repo.archived && repo.name !== "me";
+}
+
+// Fixed-size top-k selection by an ISO date: O(n·k) time with k = 3, O(k) extra space, no full sort.
+// Accepts unsorted input; retained values are references to normalized records.
+function newestBy(repositories: readonly Repository[], date: (repo: Repository) => string | null, cutoff: number, skip?: ReadonlySet<number>, limit = 3): Repository[] {
+  const selected: Repository[] = [];
   for (const repo of repositories) {
-    if (repo.fork || repo.archived || repo.name === "me" || !repo.pushedAt || Date.parse(repo.pushedAt) < cutoff) continue;
+    const value = date(repo);
+    if (!highlightable(repo) || !value || Date.parse(value) < cutoff || skip?.has(repo.id)) continue;
     let position = 0;
-    while (position < recent.length && (recent[position].pushedAt ?? "") >= repo.pushedAt) position++;
-    if (position >= 3) continue;
-    recent.splice(position, 0, repo);
-    if (recent.length > 3) recent.pop();
+    while (position < selected.length && (date(selected[position]) ?? "") >= value) position++;
+    if (position >= limit) continue;
+    selected.splice(position, 0, repo);
+    if (selected.length > limit) selected.pop();
   }
-  return recent;
+  return selected;
+}
+
+/** True for an owned, active repository created within the last NEW_PROJECT_DAYS. O(1). */
+export function isNewRepository(repo: Repository, now = new Date()): boolean {
+  return highlightable(repo) && !!repo.createdAt && Date.parse(repo.createdAt) >= now.getTime() - NEW_PROJECT_DAYS * DAY_MS;
+}
+
+/** Up to three newest repositories created within the last NEW_PROJECT_DAYS. */
+export function newRepositories(repositories: readonly Repository[], now = new Date()): Repository[] {
+  return newestBy(repositories, repo => repo.createdAt, now.getTime() - NEW_PROJECT_DAYS * DAY_MS);
+}
+
+/** Up to three most recently pushed repositories from the last 180 days, minus any already highlighted. */
+export function recentRepositories(repositories: readonly Repository[], now = new Date(), skip?: ReadonlySet<number>): Repository[] {
+  return newestBy(repositories, repo => repo.pushedAt, now.getTime() - 180 * DAY_MS, skip);
 }

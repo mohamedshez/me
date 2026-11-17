@@ -7,6 +7,7 @@ export type Repository = {
   language: string | null;
   topics: string[];
   pushedAt: string | null;
+  createdAt: string | null;
   stars: number;
   fork: boolean;
   archived: boolean;

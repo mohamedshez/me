@@ -26,7 +26,9 @@ test("portfolio routes render cleanly without excluded content", async ({ page, 
   await expect(page.getByTestId("build-version")).toContainText(build.version);
   if (build.tagUrl) await expect(page.getByTestId("build-version").getByRole("link")).toHaveAttribute("href", build.tagUrl);
   expect(await page.content()).not.toContain('searchText');
-  expect(await page.locator('.project-grid .project-card').count()).toBeLessThanOrEqual(3);
+  // Homepage stays bounded: at most three new projects plus three recently updated ones.
+  expect(await page.locator('.just-added .project-card').count()).toBeLessThanOrEqual(3);
+  expect(await page.locator('.project-grid .project-card:not(.project-card-new)').count()).toBeLessThanOrEqual(3);
   await fs.mkdir("artifacts", { recursive: true });
   await page.screenshot({ path: `artifacts/home-${info.project.name}.png`, fullPage: true });
   if (info.project.name === "mobile") await page.screenshot({ path: "artifacts/home-mobile-viewport.png" });
