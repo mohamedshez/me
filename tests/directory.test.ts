@@ -1,12 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { buildDirectory, filterDirectory, indexRepositories, directoryPage, DIRECTORY_PAGE_SIZE } from "../src/lib/directory";
-import { recentRepositories } from "../src/lib/repositories";
+import { recentRepositories, newRepositories, isNewRepository } from "../src/lib/repositories";
 import type { Repository, AppProject } from "../src/lib/types";
 
 const makeRepo = (id: number, extra: Partial<Repository> = {}): Repository => ({
   id, name: `repo-${id}`, description: `Application ${id}`, url: `https://github.com/mohamedshez/repo-${id}`,
-  homepage: null, language: "TypeScript", topics: ["maps"], pushedAt: "2026-09-01T00:00:00Z",
+  homepage: null, language: "TypeScript", topics: ["maps"], pushedAt: "2026-09-01T00:00:00Z", createdAt: "2024-01-01T00:00:00Z",
   stars: 0, fork: false, archived: false, ...extra,
 });
 const live: AppProject = { slug: "live", name: "Live product", category: "App", summary: "Fallback", url: "https://example.com", repository: "repo-42", technologies: [], responsibility: "Maintainer", notes: [] };
@@ -68,4 +68,29 @@ test("top-three selection handles unsorted input, skips ineligible records and p
   const before = [...repositories];
   assert.deepEqual(recentRepositories(repositories, new Date("2026-09-24")).map(repo => repo.id), [2, 5, 4]);
   assert.deepEqual(repositories, before);
+});
+
+test("newly created repositories are highlighted automatically and leave the recent list", () => {
+  const now = new Date("2026-11-17");
+  const repositories = [
+    makeRepo(1, { createdAt: "2026-11-16T00:00:00Z", pushedAt: "2026-11-17T00:00:00Z" }),
+    makeRepo(2, { createdAt: "2026-11-13T00:00:00Z", pushedAt: "2026-11-13T00:00:00Z" }),
+    makeRepo(3, { createdAt: "2026-11-15T00:00:00Z", fork: true }),
+    makeRepo(4, { createdAt: "2026-08-01T00:00:00Z", pushedAt: "2026-11-10T00:00:00Z" }),
+    makeRepo(5, { createdAt: "2026-11-01T00:00:00Z", archived: true }),
+    makeRepo(6, { name: "me", createdAt: "2026-11-14T00:00:00Z" }),
+    makeRepo(7, { createdAt: null, pushedAt: "2026-11-05T00:00:00Z" }),
+    makeRepo(8, { createdAt: "2026-02-01T00:00:00Z", pushedAt: "2026-10-01T00:00:00Z" }),
+  ];
+  const added = newRepositories(repositories, now);
+  assert.deepEqual(added.map(repo => repo.id), [1, 2]);
+  assert.deepEqual(recentRepositories(repositories, now, new Set(added.map(repo => repo.id))).map(repo => repo.id), [4, 7, 8]);
+  assert.equal(isNewRepository(repositories[1], now), true);
+  assert.equal(isNewRepository(repositories[3], now), false);
+  assert.equal(isNewRepository(repositories[2], now), false);
+});
+
+test("the directory marks new repositories for the client", () => {
+  const entries = buildDirectory([makeRepo(1, { createdAt: "2026-11-16T00:00:00Z" }), makeRepo(2)], [], new Date("2026-11-17"));
+  assert.deepEqual(entries.map(entry => entry.isNew), [true, false]);
 });

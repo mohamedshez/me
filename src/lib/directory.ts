@@ -1,3 +1,4 @@
+import { isNewRepository } from "./repositories";
 import type { AppProject, Repository } from "./types";
 
 export type DirectoryEntry = {
@@ -13,6 +14,7 @@ export type DirectoryEntry = {
   archived: boolean;
   pushedAt: string | null;
   live: boolean;
+  isNew: boolean;
   searchText: string;
 };
 export type DirectoryFilter = "all" | "live" | "source" | "forks" | "archived";
@@ -39,7 +41,7 @@ function searchable(entry: Omit<DirectoryEntry, "searchText">, topics: readonly 
 
 // Server transformation: O(n + a + s) time and space, where s is text length.
 // Only the searchable directory needs this complete, display-ready payload.
-export function buildDirectory(repositories: readonly Repository[], applications: readonly AppProject[]): DirectoryEntry[] {
+export function buildDirectory(repositories: readonly Repository[], applications: readonly AppProject[], now = new Date()): DirectoryEntry[] {
   const byName = indexRepositories(repositories);
   const linked = new Set<string>();
   const entries: DirectoryEntry[] = [];
@@ -50,7 +52,7 @@ export function buildDirectory(repositories: readonly Repository[], applications
       id: `app:${app.slug}`, name: app.name, description: repo?.description || app.summary,
       href: `/work/${app.slug}`, website: app.url, source: repo?.url ?? null,
       language: repo?.language ?? null, private: !app.repository, fork: false,
-      archived: false, pushedAt: repo?.pushedAt ?? null, live: true,
+      archived: false, pushedAt: repo?.pushedAt ?? null, live: true, isNew: repo ? isNewRepository(repo, now) : false,
     }, repo?.topics ?? []));
   }
   for (const repo of repositories) {
@@ -59,7 +61,7 @@ export function buildDirectory(repositories: readonly Repository[], applications
       id: `repo:${repo.id}`, name: repo.name, description: repo.description || "Explore this project on GitHub.",
       href: `/projects/${repo.name}`, website: repo.homepage, source: repo.url,
       language: repo.language, private: false, fork: repo.fork, archived: repo.archived,
-      pushedAt: repo.pushedAt, live: false,
+      pushedAt: repo.pushedAt, live: false, isNew: isNewRepository(repo, now),
     }, repo.topics));
   }
   return entries;
